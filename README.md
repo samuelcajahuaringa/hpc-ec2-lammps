@@ -30,12 +30,9 @@ parallel aplication the [LAMMPS](https://www.lammps.org/) software.
 
 -   Connect all VMs to the same Security Group at the time of instantiating them, otherwise, they can't access each other.
 
-    :   -   For the first VM, choose **create new security group**
-    
-        -   Add one rule with the type of **All traffic** from source 0.0.0.0/0
-    
-        -   Add second rule with the type to **NFS** and source to your
-            security group.
+    -   For the first VM, choose **create new security group**
+    -   Add one rule with the type of **All traffic** from source 0.0.0.0/0
+    -   Add second rule with the type to **NFS** and source to your security group.
 
 -   For the rest of VMs, choose **select an existing security group**
     and select the security group that you have created for the first VM
