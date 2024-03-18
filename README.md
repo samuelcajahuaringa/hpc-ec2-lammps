@@ -29,9 +29,7 @@ parallel aplication the [LAMMPS](https://www.lammps.org/) software.
 -   Do not add any extra storage. The default storage is more than
     enough for our purpose.
 
--   
-
-    Connect all VMs to the same Security Group at the time of instantiating them, otherwise, they can't access each other.
+-   Connect all VMs to the same Security Group at the time of instantiating them, otherwise, they can't access each other.
 
     :   -   For the first VM, choose **create new security group**
         -   Add one rule with the type of **All traffic** from source
