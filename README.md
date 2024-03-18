@@ -12,7 +12,6 @@ parallel aplication the [LAMMPS](https://www.lammps.org/) software.
 ## 1. Set-up machine that will form cluster:
 
 1.1 Getting the AWS EC2 instances up and running
-
 ------------------------------------------------------------------------
 
 -   instantces a Linux virtual machine (VM) withing Amazon EC2 and how
@@ -32,8 +31,9 @@ parallel aplication the [LAMMPS](https://www.lammps.org/) software.
 -   Connect all VMs to the same Security Group at the time of instantiating them, otherwise, they can't access each other.
 
     :   -   For the first VM, choose **create new security group**
-        -   Add one rule with the type of **All traffic** from source
-            0.0.0.0/0
+    
+        -   Add one rule with the type of **All traffic** from source 0.0.0.0/0
+    
         -   Add second rule with the type to **NFS** and source to your
             security group.
 
