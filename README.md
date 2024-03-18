@@ -42,7 +42,7 @@ Use the **ifconfig** command to know your VM's private IP address (it
 should be in the range of 172.x.x.x). You can also find it in the
 **botton** of the AWS web console for each VM.
 
-Set the **hostname** of each VM by altering /etc/hostname:
+Set the **hostname** of each VM by altering `/etc/hostname`:
 
 ``` bash
 sudo vim /etc/hostname
@@ -107,14 +107,14 @@ ff02::3 ip6-allhosts
 
 ### 1.3 Configure ubuntu user to login to the worker nodes without password
 
--   On the head node do the following to generate key pairs:
+On the head node do the following to generate key pairs:
 
 ``` bash
 ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_25519
 cat ~/.ssh/id_25519.pub
 ```
 
--   Copy the public key content (make sure that it includes:
+Copy the public key content (make sure that it includes:
     `ssh-ed25519……ubuntu@head`) and then do the following on each remote
     node
 
@@ -122,7 +122,7 @@ cat ~/.ssh/id_25519.pub
 echo "<paste public key here>" >>  ~/.ssh/authorized_keys
 ```
 
--   Now, try to ssh to other nodes from head node, in the following way:
+Now, try to ssh to other nodes from head node, in the following way:
 
 ``` bash
 ssh -i ~/.ssh/id_25519 node01
