@@ -11,8 +11,7 @@ parallel aplication the [LAMMPS](https://www.lammps.org/) software.
 
 ## 1. Set-up machine that will form cluster:
 
-1.1 Getting the AWS EC2 instances up and running
-------------------------------------------------------------------------
+### 1.1 Getting the AWS EC2 instances up and running
 
 -   instantces a Linux virtual machine (VM) withing Amazon EC2 and how
     to connect to it.
