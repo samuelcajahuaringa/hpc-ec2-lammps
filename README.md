@@ -4,7 +4,7 @@ In this repository, I document my endeavor to construct a scalable high-performa
 The knowledge gained from this tutorial aims to assist you to understand the basis principles of building your own functional HPC cluster, management using ["Slurm"](https://slurm.schedmd.com/), and finally as example we run a 
 parallel aplication the ["LAMMPS"](https://www.lammps.org/) software.
 
-For more information review our the follwing doc ["HPC-EC2-LAMMPS"]   (https://hpc-ec2-lammps.readthedocs.io/en/latest/)   
+For more information review our the follwing doc ["HPC-EC2-LAMMPS"](https://hpc-ec2-lammps.readthedocs.io/en/latest/)   
 
 Author & Contact:
 --------------
