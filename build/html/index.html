@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="english" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building a HPC Slurm Cluster using Amazon EC2 &mdash; hpc-ec2-lammps v0.1 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            hpc-ec2-lammps
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Building a HPC Slurm Cluster using Amazon EC2</a><ul>
+<li><a class="reference internal" href="#set-up-machine-that-will-form-cluster">1. Set-up machine that will form cluster:</a><ul>
+<li><a class="reference internal" href="#give-your-vms-easy-names">1.2 Give your VMs easy names</a></li>
+<li><a class="reference internal" href="#configure-ubuntu-user-to-login-to-the-worker-nodes-without-password">1.3 Configure ubuntu user to login to the worker nodes without password</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#install-and-configuration-of-nfs">2. Install and configuration of NFS:</a><ul>
+<li><a class="reference internal" href="#configure-nfs-server-on-the-head-node">2.1 Configure NFS server on the Head node</a></li>
+<li><a class="reference internal" href="#configure-nfs-on-the-workes-nodes">2.2 Configure NFS on the workes nodes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#combine-vms-as-a-cluster-with-slurm-job-scheduler">3. Combine VMs as a cluster with SLURM job scheduler:</a><ul>
+<li><a class="reference internal" href="#install-slurm-on-head-node">3.1 Install SLURM on head node</a></li>
+<li><a class="reference internal" href="#slurm-configuration-head-node">3.2 SLURM configuration head node</a><ul>
+<li><a class="reference internal" href="#set-the-cluster-name">3.2.1 Set the cluster name</a></li>
+<li><a class="reference internal" href="#set-the-control-machine-info">3.2.2 Set the control machine info</a></li>
+<li><a class="reference internal" href="#set-authentication">3.2.3 Set authentication</a></li>
+<li><a class="reference internal" href="#customize-the-scheduler-algorithm">3.2.4 Customize the scheduler algorithm</a></li>
+<li><a class="reference internal" href="#add-the-nodes">3.2.5 Add the nodes</a></li>
+<li><a class="reference internal" href="#create-a-partition">3.2.6 Create a partition</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configure-cgroup-support">3.3 Configure cgroup support</a></li>
+<li><a class="reference internal" href="#copy-the-configuration-files-to-shared-storage">3.4 Copy the Configuration Files to Shared Storage</a></li>
+<li><a class="reference internal" href="#enable-and-start-slurm-control-services">3.5 Enable and Start SLURM Control Services</a></li>
+<li><a class="reference internal" href="#reboot-optional">3.6 Reboot (optional)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#slurm-configuration-workers-node">4. SLURM configuration workers node</a><ul>
+<li><a class="reference internal" href="#enable-and-start-munger">4.1 Enable and Start Munger</a></li>
+<li><a class="reference internal" href="#enable-and-start-slurm">4.2 Enable and Start SLURM</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#test-your-slurm-cluster">5. Test your SLURM cluster</a></li>
+<li><a class="reference internal" href="#installing-and-run-lammps">6. Installing and Run LAMMPS</a><ul>
+<li><a class="reference internal" href="#intall-c-compiler">6.1 Intall c++ compiler</a></li>
+<li><a class="reference internal" href="#intall-cmake">6.2 Intall cmake</a></li>
+<li><a class="reference internal" href="#download-lammps">6.3 Download LAMMPS</a></li>
+<li><a class="reference internal" href="#compiling-lammps">6.4 Compiling LAMMPS</a></li>
+<li><a class="reference internal" href="#runing-lammps">6.5 Runing LAMMPS</a></li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">hpc-ec2-lammps</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Building a HPC Slurm Cluster using Amazon EC2</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="building-a-hpc-slurm-cluster-using-amazon-ec2">
+<h1>Building a HPC Slurm Cluster using Amazon EC2<a class="headerlink" href="#building-a-hpc-slurm-cluster-using-amazon-ec2" title="Permalink to this heading"></a></h1>
+<p>In this repository, I document my endeavor to construct a scalable high-performance computing (HPC) cluster
+using <a class="reference external" href="https://aws.amazon.com/ec2/">Amazon ec2</a> instantces, specifically tailored for scientific applications.
+The knowledge gained from this tutorial aims to assist you to understand the basis principles of building
+your own functional HPC cluster, management using <a class="reference external" href="https://slurm.schedmd.com/">Slurm</a>, and finally as example we run a
+parallel aplication the <a class="reference external" href="https://www.lammps.org/">LAMMPS</a> software.</p>
+<section id="set-up-machine-that-will-form-cluster">
+<h2>1. Set-up machine that will form cluster:<a class="headerlink" href="#set-up-machine-that-will-form-cluster" title="Permalink to this heading"></a></h2>
+<p>1.1 Getting the AWS EC2 instances up and running</p>
+<hr class="docutils" />
+<ul class="simple">
+<li><p>instantces a Linux virtual machine (VM) withing Amazon EC2 and how to connect to it.</p></li>
+<li><p>The operating system we use in this project is <strong>Ubuntu Server 20.04 LTS</strong>, which has a free tier AMI available in Amazon EC2.</p></li>
+<li><p>Use <strong>t2.micro</strong> instance type to make sure you are not incurring any cost.</p></li>
+<li><p>Use <strong>default VPC network</strong> when asked for VPC.</p></li>
+<li><p>Do not add any extra storage. The default storage is more than enough for our purpose.</p></li>
+<li><dl class="simple">
+<dt>Connect all VMs to the same Security Group at the time of instantiating them, otherwise, they can’t access each other.</dt><dd><ul>
+<li><p>For the first VM, choose <strong>create new security group</strong></p></li>
+<li><p>Add one rule with the type of <strong>All traffic</strong> from source 0.0.0.0/0</p></li>
+<li><p>Add second rule with the type to <strong>NFS</strong> and source to your security group.</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p>For the rest of VMs, choose <strong>select an existing security group</strong> and select the security group that you have created for the first VM</p></li>
+</ul>
+<section id="give-your-vms-easy-names">
+<h3>1.2 Give your VMs easy names<a class="headerlink" href="#give-your-vms-easy-names" title="Permalink to this heading"></a></h3>
+<p>Use the <strong>ifconfig</strong> command to know your VM’s private IP address (it should be in the range of 172.x.x.x). You can also find it in the <strong>botton</strong> of the AWS web console for each VM.</p>
+<p>Set the <strong>hostname</strong> of each VM by altering /etc/hostname:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>vim<span class="w"> </span>/etc/hostname
+</pre></div>
+</div>
+<p>In his example was used 3 VMs, one for head node and 2 for workers node, edit the existing name and make it to be head and node01, node02 for the workers nodes.</p>
+<p>Reebot the VMs in order to apply the changes.</p>
+<p>On all VMs, edit <code class="code docutils literal notranslate"><span class="pre">/etc/hosts</span></code> and add following lines at the end with each VM’s IP address and its name. Remember to use <strong>sudo</strong> for editing.</p>
+<p>It should be like for head node:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="m">127</span>.0.0.1<span class="w"> </span>localhost
+&lt;IP-address<span class="w"> </span>of<span class="w"> </span>node<span class="w"> </span><span class="m">01</span>&gt;<span class="w"> </span>node01
+&lt;IP-address<span class="w"> </span>of<span class="w"> </span>node<span class="w"> </span><span class="m">02</span>&gt;<span class="w"> </span>node02
+
+<span class="c1"># The following lines are desirable for IPv6 capable hosts</span>
+::1<span class="w"> </span>ip6-localhost<span class="w"> </span>ip6-loopback
+fe00::0<span class="w"> </span>ip6-localnet
+ff00::0<span class="w"> </span>ip6-mcastprefix
+ff02::1<span class="w"> </span>ip6-allnodes
+ff02::2<span class="w"> </span>ip6-allrouters
+ff02::3<span class="w"> </span>ip6-allhosts
+</pre></div>
+</div>
+<p>for the node01</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="m">127</span>.0.0.1<span class="w"> </span>localhost
+&lt;IP-address<span class="w"> </span>of<span class="w"> </span>head&gt;<span class="w"> </span>head
+&lt;IP-address<span class="w"> </span>of<span class="w"> </span>node<span class="w"> </span><span class="m">02</span>&gt;<span class="w"> </span>node02
+
+<span class="c1"># The following lines are desirable for IPv6 capable hosts</span>
+::1<span class="w"> </span>ip6-localhost<span class="w"> </span>ip6-loopback
+fe00::0<span class="w"> </span>ip6-localnet
+ff00::0<span class="w"> </span>ip6-mcastprefix
+ff02::1<span class="w"> </span>ip6-allnodes
+ff02::2<span class="w"> </span>ip6-allrouters
+ff02::3<span class="w"> </span>ip6-allhosts
+</pre></div>
+</div>
+<p>for the node02</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="m">127</span>.0.0.1<span class="w"> </span>localhost
+&lt;IP-address<span class="w"> </span>of<span class="w"> </span>head&gt;<span class="w"> </span>head
+&lt;IP-address<span class="w"> </span>of<span class="w"> </span>node<span class="w"> </span><span class="m">01</span>&gt;<span class="w"> </span>node01
+
+<span class="c1"># The following lines are desirable for IPv6 capable hosts</span>
+::1<span class="w"> </span>ip6-localhost<span class="w"> </span>ip6-loopback
+fe00::0<span class="w"> </span>ip6-localnet
+ff00::0<span class="w"> </span>ip6-mcastprefix
+ff02::1<span class="w"> </span>ip6-allnodes
+ff02::2<span class="w"> </span>ip6-allrouters
+ff02::3<span class="w"> </span>ip6-allhosts
+</pre></div>
+</div>
+</section>
+<section id="configure-ubuntu-user-to-login-to-the-worker-nodes-without-password">
+<h3>1.3 Configure ubuntu user to login to the worker nodes without password<a class="headerlink" href="#configure-ubuntu-user-to-login-to-the-worker-nodes-without-password" title="Permalink to this heading"></a></h3>
+<ul class="simple">
+<li><p>On the head node do the following to generate key pairs:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh-keygen<span class="w"> </span>-t<span class="w"> </span>ed25519<span class="w"> </span>-N<span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span>-f<span class="w"> </span>~/.ssh/id_25519
+cat<span class="w"> </span>~/.ssh/id_25519.pub
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Copy the public key content (make sure that it includes: <code class="code docutils literal notranslate"><span class="pre">ssh-ed25519……ubuntu&#64;head</span></code>) and then do the following on each remote node</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;&lt;paste public key here&gt;&quot;</span><span class="w"> </span>&gt;&gt;<span class="w">  </span>~/.ssh/authorized_keys
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Now, try to ssh to other nodes from head node, in the following way:</p></li>
+</ul>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ssh<span class="w"> </span>-i<span class="w"> </span>~/.ssh/id_25519<span class="w"> </span>node01
+ssh<span class="w"> </span>-i<span class="w"> </span>~/.ssh/id_25519<span class="w"> </span>node02
+</pre></div>
+</div>
+</section>
+</section>
+<section id="install-and-configuration-of-nfs">
+<h2>2. Install and configuration of NFS:<a class="headerlink" href="#install-and-configuration-of-nfs" title="Permalink to this heading"></a></h2>
+<section id="configure-nfs-server-on-the-head-node">
+<h3>2.1 Configure NFS server on the Head node<a class="headerlink" href="#configure-nfs-server-on-the-head-node" title="Permalink to this heading"></a></h3>
+<p>Create a shared directory and set the permission of a directory (Note that this should be the same across all the nodes).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>mkdir<span class="w"> </span>/shared
+sudo<span class="w"> </span>chown<span class="w"> </span>nobody.nogroup<span class="w"> </span>-R<span class="w"> </span>/shared
+sudo<span class="w"> </span>chmod<span class="w"> </span><span class="m">777</span><span class="w"> </span>-R<span class="w"> </span>/shared
+</pre></div>
+</div>
+<p>Install the NFS package</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>nfs-kernel-server<span class="w"> </span>-y
+</pre></div>
+</div>
+<p>Configure <code class="code docutils literal notranslate"><span class="pre">/etc/exports</span></code> to use a new shared directory</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>sh<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;echo &quot;/shared 172.0.0.0/8(rw,sync,no_root_squash,no_subtree_check)&quot; &gt;&gt; /etc/exports&#39;</span>
+sudo<span class="w"> </span>exportfs<span class="w"> </span>-a
+</pre></div>
+</div>
+<p>should look like this:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># /etc/exports: the access control list for filesystems which may be exported</span>
+<span class="c1">#               to NFS clients.  See exports(5).</span>
+<span class="c1">#</span>
+<span class="c1"># Example for NFSv2 and NFSv3:</span>
+<span class="c1"># /srv/homes       hostname1(rw,sync,no_subtree_check) hostname2(ro,sync,no_subtree_check)</span>
+<span class="c1">#</span>
+<span class="c1"># Example for NFSv4:</span>
+<span class="c1"># /srv/nfs4        gss/krb5i(rw,sync,fsid=0,crossmnt,no_subtree_check)</span>
+<span class="c1"># /srv/nfs4/homes  gss/krb5i(rw,sync,no_subtree_check)</span>
+<span class="c1">#</span>
+/shared<span class="w"> </span><span class="m">172</span>.0.0.0/8<span class="o">(</span>rw,sync,no_root_squash,no_subtree_check<span class="o">)</span>
+</pre></div>
+</div>
+</section>
+<section id="configure-nfs-on-the-workes-nodes">
+<h3>2.2 Configure NFS on the workes nodes<a class="headerlink" href="#configure-nfs-on-the-workes-nodes" title="Permalink to this heading"></a></h3>
+<p>Create a shared directory and set the permission of a directory</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>mkdir<span class="w"> </span>/shared
+sudo<span class="w"> </span>chown<span class="w"> </span>nobody.nogroup<span class="w"> </span>/shared
+sudo<span class="w"> </span>chmod<span class="w"> </span>-R<span class="w"> </span><span class="m">777</span><span class="w"> </span>/shared
+</pre></div>
+</div>
+<p>Install the NFS package</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt-get<span class="w"> </span>update
+sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>nfs-kernel-server<span class="w"> </span>-y
+</pre></div>
+</div>
+<p>We want the NFS share to mount automatically when the nodes boot.
+For that purpose, edit <strong>/etc/fstab</strong> to accomplish this by adding the following line at the end (should look like this):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">LABEL</span><span class="o">=</span>cloudimg-rootfs<span class="w">   </span>/<span class="w">        </span>ext4<span class="w">   </span>discard,errors<span class="o">=</span>remount-ro<span class="w">       </span><span class="m">0</span><span class="w"> </span><span class="m">1</span>
+<span class="nv">LABEL</span><span class="o">=</span>UEFI<span class="w">      </span>/boot/efi<span class="w">       </span>vfat<span class="w">    </span><span class="nv">umask</span><span class="o">=</span><span class="m">0077</span><span class="w">      </span><span class="m">0</span><span class="w"> </span><span class="m">1</span>
+&lt;IP-address<span class="w"> </span>of<span class="w"> </span>head<span class="w"> </span>node&gt;:/shared<span class="w">  </span>/shared<span class="w"> </span>nfs<span class="w"> </span>defaults<span class="w">   </span><span class="m">0</span><span class="w"> </span><span class="m">0</span>
+</pre></div>
+</div>
+<p>Mount the share directory:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>mount<span class="w"> </span>-a
+</pre></div>
+</div>
+<p>If everything is fine, you should see the NFS mount on worker nodes with <strong>df -h</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&lt;IP-addres<span class="w"> </span>of<span class="w"> </span>head<span class="w"> </span>node&gt;:/shared<span class="w">   </span><span class="m">7941632</span><span class="w"> </span><span class="m">2305920</span><span class="w">   </span><span class="m">5619328</span><span class="w">  </span><span class="m">30</span>%<span class="w"> </span>/shared
+</pre></div>
+</div>
+</section>
+</section>
+<section id="combine-vms-as-a-cluster-with-slurm-job-scheduler">
+<h2>3. Combine VMs as a cluster with SLURM job scheduler:<a class="headerlink" href="#combine-vms-as-a-cluster-with-slurm-job-scheduler" title="Permalink to this heading"></a></h2>
+<p>Update OS and preinstalled software to the latest version before installing SLURM for all nodes.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>update
+sudo<span class="w"> </span>apt<span class="w"> </span>upgrade
+</pre></div>
+</div>
+<section id="install-slurm-on-head-node">
+<h3>3.1 Install SLURM on head node<a class="headerlink" href="#install-slurm-on-head-node" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>slurm-wlm<span class="w"> </span>-y
+</pre></div>
+</div>
+</section>
+<section id="slurm-configuration-head-node">
+<h3>3.2 SLURM configuration head node<a class="headerlink" href="#slurm-configuration-head-node" title="Permalink to this heading"></a></h3>
+<p>We’ll use the default SLURM configuration file as a base. Copy it over:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/etc/slurm
+sudo<span class="w"> </span>cp<span class="w"> </span>/usr/share/doc/slurm-client/examples/slurm.conf.simple.gz<span class="w"> </span>.
+sudo<span class="w"> </span>gzip<span class="w"> </span>-d<span class="w"> </span>slurm.conf.simple.gz
+sudo<span class="w"> </span>mv<span class="w"> </span>slurm.conf.simple<span class="w"> </span>slurm.conf
+</pre></div>
+</div>
+<p>Then edit <code class="code docutils literal notranslate"><span class="pre">/etc/slurm-llnl/slurm.conf</span></code></p>
+<section id="set-the-cluster-name">
+<h4>3.2.1 Set the cluster name<a class="headerlink" href="#set-the-cluster-name" title="Permalink to this heading"></a></h4>
+<p>This is somewhat superficial, but you can customize the cluster name in the “LOGGING AND ACCOUNTING” section:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">ClusterName</span><span class="o">=</span>cluster
+</pre></div>
+</div>
+</section>
+<section id="set-the-control-machine-info">
+<h4>3.2.2 Set the control machine info<a class="headerlink" href="#set-the-control-machine-info" title="Permalink to this heading"></a></h4>
+<p>Modify the first configuration line to include the hostname of the master node, and its IP address:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">SlurmctldHost</span><span class="o">=</span>head<span class="o">(</span>&lt;ip<span class="w"> </span>addr<span class="w"> </span>of<span class="w"> </span>head<span class="w"> </span>node&gt;<span class="o">)</span>
+</pre></div>
+</div>
+</section>
+<section id="set-authentication">
+<h4>3.2.3 Set authentication<a class="headerlink" href="#set-authentication" title="Permalink to this heading"></a></h4>
+<p>All communications between Slurm components are authenticated. The authentication infrastructure is provided by a dynamically loaded
+plugin chosen at runtime via the <strong>AuthType</strong> keyword in the Slurm configuration file.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">AuthType</span><span class="o">=</span>auth/munge
+</pre></div>
+</div>
+</section>
+<section id="customize-the-scheduler-algorithm">
+<h4>3.2.4 Customize the scheduler algorithm<a class="headerlink" href="#customize-the-scheduler-algorithm" title="Permalink to this heading"></a></h4>
+<p>SLURM can allocate resources to jobs in a number of different ways, but for
+our cluster we’ll use the <strong>consumable resources</strong> method. This basically means that each node has a
+consumable resource (in this case, CPU cores), and it allocates resources to jobs based on these resources.
+So, edit the SelectType field and provide parameters, like so:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">SelectType</span><span class="o">=</span><span class="k">select</span>/cons_res
+<span class="nv">SelectTypeParameters</span><span class="o">=</span>CR_Core
+</pre></div>
+</div>
+</section>
+<section id="add-the-nodes">
+<h4>3.2.5 Add the nodes<a class="headerlink" href="#add-the-nodes" title="Permalink to this heading"></a></h4>
+<p>Now we need to tell SLURM about the compute nodes. Near the end of the file, there should be an example entry for the compute node.
+Delete it, and add the following configurations for the cluster nodes:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">NodeName</span><span class="o">=</span>head<span class="w"> </span><span class="nv">NodeAddr</span><span class="o">=</span>&lt;ip<span class="w"> </span>addr<span class="w"> </span>head&gt;<span class="w"> </span><span class="nv">CPUs</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">State</span><span class="o">=</span>UNKNOWN
+<span class="nv">NodeName</span><span class="o">=</span>node01<span class="w"> </span><span class="nv">NodeAddr</span><span class="o">=</span>&lt;ip<span class="w"> </span>addr<span class="w"> </span>node01&gt;<span class="w"> </span><span class="nv">CPUs</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">State</span><span class="o">=</span>UNKNOWN
+<span class="nv">NodeName</span><span class="o">=</span>node02<span class="w"> </span><span class="nv">NodeAddr</span><span class="o">=</span>&lt;ip<span class="w"> </span>addr<span class="w"> </span>node01&gt;<span class="w"> </span><span class="nv">CPUs</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">State</span><span class="o">=</span>UNKNOWN
+</pre></div>
+</div>
+</section>
+<section id="create-a-partition">
+<h4>3.2.6 Create a partition<a class="headerlink" href="#create-a-partition" title="Permalink to this heading"></a></h4>
+<p>SLURM runs jobs on ‘partitions,’ or groups of nodes. We’ll create a default partition and add our 2 compute nodes to it.
+Be sure to delete the example partition in the file, then add the following on one line:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>PartitionName=test Nodes=node[01-02] Default=YES MaxTime=INFINITE State=UP
+</pre></div>
+</div>
+</section>
+</section>
+<section id="configure-cgroup-support">
+<h3>3.3 Configure cgroup support<a class="headerlink" href="#configure-cgroup-support" title="Permalink to this heading"></a></h3>
+<p>The latest update of SLURM brought integrated support for cgroups kernel isolation, which restricts
+access to system resources. We need to tell SLURM what resources to allow jobs to access. To do this, create the file <code class="code docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">touch</span> <span class="pre">/etc/slurm/cgroup.conf</span></code>
+with following information:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>CgroupMountpoint=&quot;/sys/fs/cgroup&quot;
+CgroupAutomount=yes
+CgroupReleaseAgentDir=&quot;/etc/slurm/cgroup&quot;
+AllowedDevicesFile=&quot;/etc/slurm/cgroup_allowed_devices_file.conf&quot;
+ConstrainCores=no
+TaskAffinity=no
+ConstrainRAMSpace=yes
+ConstrainSwapSpace=no
+ConstrainDevices=no
+AllowedRamSpace=100
+AllowedSwapSpace=0
+MaxRAMPercent=100
+MaxSwapPercent=100
+MinRAMSpace=30
+</pre></div>
+</div>
+<p>Now, whitelist system devices by creating the file <code class="code docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">touch</span> <span class="pre">/etc/slurm/cgroup_allowed_devices_file.conf</span></code> with this information:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>/dev/null
+/dev/urandom
+/dev/zero
+/dev/sda*
+/dev/cpu/*/*
+/dev/pts/*
+/shared*
+</pre></div>
+</div>
+<p>Note that this configuration is pretty permissive, but for our purposes, this is okay. You could always tighten it up to suit your needs.</p>
+</section>
+<section id="copy-the-configuration-files-to-shared-storage">
+<h3>3.4 Copy the Configuration Files to Shared Storage<a class="headerlink" href="#copy-the-configuration-files-to-shared-storage" title="Permalink to this heading"></a></h3>
+<p>In order for the other nodes to be controlled by SLURM, they need to have the same
+configuration file, as well as the Munge key file. Copy those to shared storage to make them easier to access, like so:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>cp<span class="w"> </span>slurm.conf<span class="w"> </span>cgroup.conf<span class="w"> </span>cgroup_allowed_devices_file.conf<span class="w"> </span>/shared
+sudo<span class="w"> </span>cp<span class="w"> </span>/etc/munge/munge.key<span class="w"> </span>/shared
+</pre></div>
+</div>
+</section>
+<section id="enable-and-start-slurm-control-services">
+<h3>3.5 Enable and Start SLURM Control Services<a class="headerlink" href="#enable-and-start-slurm-control-services" title="Permalink to this heading"></a></h3>
+<p>Munge:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>munge
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>munge
+</pre></div>
+</div>
+<p>The SLURM daemon:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>slurmd
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>slurmd
+</pre></div>
+</div>
+<p>And the control daemon:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>slurmctld
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>slurmctld
+</pre></div>
+</div>
+</section>
+<section id="reboot-optional">
+<h3>3.6 Reboot (optional)<a class="headerlink" href="#reboot-optional" title="Permalink to this heading"></a></h3>
+<p>This step is optional, but if you are having problems with Munge authentication, or your nodes can’t communicate with the SLURM controller, try rebooting it.</p>
+</section>
+</section>
+<section id="slurm-configuration-workers-node">
+<h2>4. SLURM configuration workers node<a class="headerlink" href="#slurm-configuration-workers-node" title="Permalink to this heading"></a></h2>
+<p>Copy the configuration files: The configuration on all the worker nodes should
+match the configuration on the head node. So, copy it through the shared storage</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>cp<span class="w"> </span>/shared/munge.key<span class="w"> </span>/etc/munge/munge.key
+sudo<span class="w"> </span>cp<span class="w"> </span>/shared/slurm.conf<span class="w"> </span>/etc/slurm/slurm.conf
+sudo<span class="w"> </span>cp<span class="w"> </span>/shared/cgroup*<span class="w"> </span>/etc/slurm
+</pre></div>
+</div>
+<section id="enable-and-start-munger">
+<h3>4.1 Enable and Start Munger<a class="headerlink" href="#enable-and-start-munger" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>munge
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>munge
+</pre></div>
+</div>
+</section>
+<section id="enable-and-start-slurm">
+<h3>4.2 Enable and Start SLURM<a class="headerlink" href="#enable-and-start-slurm" title="Permalink to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>systemctl<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>slurmd
+sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>slurmd
+</pre></div>
+</div>
+</section>
+</section>
+<section id="test-your-slurm-cluster">
+<h2>5. Test your SLURM cluster<a class="headerlink" href="#test-your-slurm-cluster" title="Permalink to this heading"></a></h2>
+<p>Now that we’ve configured the SLURM controller and each of the nodes, we can check to make sure that SLURM
+can see all of the nodes by running sinfo on the master node (a.k.a. “the head node”):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ubuntu@head:~$<span class="w"> </span>sinfo
+PARTITION<span class="w"> </span>AVAIL<span class="w">  </span>TIMELIMIT<span class="w">   </span>NODES<span class="w"> </span>STATE<span class="w"> </span>NODELIST
+test*<span class="w">        </span>up<span class="w">   </span>infinite<span class="w">       </span><span class="m">2</span><span class="w">  </span>idle<span class="w"> </span>node<span class="o">[</span><span class="m">01</span>-02<span class="o">]</span>
+</pre></div>
+</div>
+<p>Now we can run a test job by telling SLURM to give us 2 nodes, and run the hostname command on each of them:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>srun<span class="w"> </span>--nodes<span class="o">=</span><span class="m">2</span><span class="w"> </span>hostname
+</pre></div>
+</div>
+<p>If all goes well, we should see something like:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>node01
+node02
+</pre></div>
+</div>
+</section>
+<section id="installing-and-run-lammps">
+<h2>6. Installing and Run LAMMPS<a class="headerlink" href="#installing-and-run-lammps" title="Permalink to this heading"></a></h2>
+<p>To show how the Amzon EC2 cluster can be used to run scientific calculations, we now install one of the most popular packages
+for moleculer dynamics simulations the Large-scale Atomic/Molecular Massively Parallel Simulator program from Sandia
+National Laboratories. LAMMPS makes use of Message Passing Interface (MPI) for parallel communication and is free and
+open-source software, distributed under the terms of the GNU General Public License.</p>
+<p>In our cluster configuration, only worker nodes execute computation and the master node orchestrates jobs.
+To run MPI programs on this cluster, you need to ensure that MPI is installed on nodes workers.</p>
+<section id="intall-c-compiler">
+<h3>6.1 Intall c++ compiler<a class="headerlink" href="#intall-c-compiler" title="Permalink to this heading"></a></h3>
+<p>On the head node</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo<span class="w"> </span>su<span class="w"> </span>-
+srun<span class="w"> </span>--nodes<span class="o">=</span><span class="m">2</span><span class="w"> </span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>g++<span class="w"> </span>-y
+</pre></div>
+</div>
+<p>the <code class="code docutils literal notranslate"><span class="pre">sudo</span> <span class="pre">su</span> <span class="pre">-</span></code> to access as root of head node. This will run the <code class="code docutils literal notranslate"><span class="pre">apt</span> <span class="pre">install</span> <span class="pre">g++</span> <span class="pre">-y</span></code> command on workers nodes in the cluster (change the 2 to match your setup).</p>
+<p>Check it was correctly installed on each workers</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>srun<span class="w"> </span>--nodes<span class="o">=</span><span class="m">2</span><span class="w"> </span>g++<span class="w"> </span>--version
+</pre></div>
+</div>
+</section>
+<section id="intall-cmake">
+<h3>6.2 Intall cmake<a class="headerlink" href="#intall-cmake" title="Permalink to this heading"></a></h3>
+<p>On the head node</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>srun<span class="w"> </span>--nodes<span class="o">=</span><span class="m">2</span><span class="w"> </span>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>cmake<span class="w"> </span>-y
+</pre></div>
+</div>
+<p>Check it was correctly installed on each workers</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>srun<span class="w"> </span>--nodes<span class="o">=</span><span class="m">2</span><span class="w"> </span>cmake<span class="w"> </span>--version
+</pre></div>
+</div>
+</section>
+<section id="download-lammps">
+<h3>6.3 Download LAMMPS<a class="headerlink" href="#download-lammps" title="Permalink to this heading"></a></h3>
+<p>On the head node</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/shared/
+wget<span class="w"> </span>https://download.lammps.org/tars/lammps-stable.tar.gz
+tar<span class="w"> </span>-xzf<span class="w"> </span>lammps-stable.tar.gz
+</pre></div>
+</div>
+</section>
+<section id="compiling-lammps">
+<h3>6.4 Compiling LAMMPS<a class="headerlink" href="#compiling-lammps" title="Permalink to this heading"></a></h3>
+<p>Because we need to compiler LAMMPS, we’re going to grab a shell instance from one of the workers nodes:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ubuntu@head:~$<span class="w"> </span>sudo<span class="w"> </span>su<span class="w"> </span>-
+root@head:~#<span class="w"> </span>srun<span class="w"> </span>--pty<span class="w"> </span>bash
+root@node01:~#<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/shared/lammps-2Aug2023/src
+root@node01:/shared/lammps-2Aug2023/src#<span class="w"> </span>make<span class="w"> </span>lmpi
+</pre></div>
+</div>
+<p>If all goes well, we should create the lammps executavel <code class="code docutils literal notranslate"><span class="pre">lmp_mpi</span></code>.</p>
+</section>
+<section id="runing-lammps">
+<h3>6.5 Runing LAMMPS<a class="headerlink" href="#runing-lammps" title="Permalink to this heading"></a></h3>
+<p>On the head node, we test the lennard-jones example. Now that we have our LAMMPS program, we will create a
+submission script to run our jobs. Create the file <code class="code docutils literal notranslate"><span class="pre">/shared/lammps-2Aug2023/examples/melt/job.sh</span></code></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+<span class="c1">#SBATCH --nodes=2</span>
+<span class="c1">#SBATCH --ntasks-per-node=1</span>
+<span class="c1">#SBATCH --partition=test</span>
+<span class="c1">#SBATCH --output=slurm.out</span>
+<span class="c1">#SBATCH --error=slurm.err</span>
+
+<span class="nb">cd</span><span class="w"> </span><span class="nv">$SLURM_SUBMIT_DIR</span>
+
+mpirun<span class="w"> </span>-np<span class="w"> </span><span class="m">2</span><span class="w"> </span>/shared/lammps-2Aug2023/src/lmp_mpi<span class="w"> </span>-in<span class="w"> </span><span class="k">in</span>.melt
+</pre></div>
+</div>
+<p>We now have everything we need to run our job</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/shared/lammps-2Aug2023/examples/melt/
+sbatch<span class="w"> </span>job.sh
+Submitted<span class="w"> </span>batch<span class="w"> </span>job<span class="w"> </span><span class="m">18</span>
+</pre></div>
+</div>
+<p>If all goes well, we should see the create files</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>log.lammps
+slurm.out
+slurm.err
+</pre></div>
+</div>
+<p>Check the outputs files log.lammps and log.8Apr21.melt.g++.4 that is found in this directory, both must be show the same thermodynamic information.</p>
+</section>
+<section id="conclusion">
+<h3>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading"></a></h3>
+<p>We now have a basically complete cluster. We can run jobs using the SLURM scheduler; we discussed how to install
+software; we installed OpenMPI; and we ran LAMMPS program that use it. Hopefully, your cluster is
+functional enough that you can add software and components to it to suit your projects.</p>
+<p>Happy Computing!</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, samuel cajahuaringa.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
