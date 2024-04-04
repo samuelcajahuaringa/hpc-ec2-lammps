@@ -239,7 +239,7 @@ sudo gzip -d slurm.conf.simple.gz
 sudo mv slurm.conf.simple slurm.conf
 ```
 
-Then edit `/etc/slurm-llnl/slurm.conf`
+Then edit `/etc/slurm/slurm.conf`
 
 #### 3.2.1 Set the cluster name
 
