@@ -524,7 +524,7 @@ from one of the workers nodes:
 ubuntu@head:~$ sudo su -
 root@head:~# srun --pty bash
 root@node01:~# cd /shared/lammps-2Aug2023/src
-root@node01:/shared/lammps-2Aug2023/src# make lmpi
+root@node01:/shared/lammps-2Aug2023/src# make mpi
 ```
 
 If all goes well, we should create the lammps executavel `lmp_mpi`.
