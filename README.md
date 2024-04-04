@@ -292,7 +292,7 @@ and add the following configurations for the cluster nodes:
 ``` bash
 NodeName=head NodeAddr=<ip addr head> CPUs=1 State=UNKNOWN
 NodeName=node01 NodeAddr=<ip addr node01> CPUs=1 State=UNKNOWN
-NodeName=node02 NodeAddr=<ip addr node01> CPUs=1 State=UNKNOWN
+NodeName=node02 NodeAddr=<ip addr node02> CPUs=1 State=UNKNOWN
 ```
 
 #### 3.2.6 Create a partition
