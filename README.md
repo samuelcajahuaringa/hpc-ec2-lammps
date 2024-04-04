@@ -388,7 +388,7 @@ controller, try rebooting it.
 
 ## 4. SLURM configuration workers node
 
-Installing slurm-client of workers node
+Installing slurm-client on workers node
 
 ``` bash
 sudo apt-get install slurmd slurm-client
