@@ -491,7 +491,7 @@ Check it was correctly installed on each workers
 srun --nodes=2 cmake --version
 ```
 
-### 6.2 Intall openmpi
+### 6.3 Intall openmpi
 
 On the head node
 
@@ -505,7 +505,7 @@ Check it was correctly installed on each workers
 srun --nodes=2 opmi_info --version
 ```
 
-### 6.3 Download LAMMPS
+### 6.4 Download LAMMPS
 
 On the head node
 
@@ -515,7 +515,7 @@ wget https://download.lammps.org/tars/lammps-stable.tar.gz
 tar -xzf lammps-stable.tar.gz 
 ```
 
-### 6.4 Compiling LAMMPS
+### 6.5 Compiling LAMMPS
 
 Because we need to compiler LAMMPS, we're going to grab a shell instance
 from one of the workers nodes:
@@ -529,7 +529,7 @@ root@node01:/shared/lammps-2Aug2023/src# make lmpi
 
 If all goes well, we should create the lammps executavel `lmp_mpi`.
 
-### 6.5 Runing LAMMPS
+### 6.6 Runing LAMMPS
 
 On the head node, we test the lennard-jones example. Now that we have
 our LAMMPS program, we will create a submission script to run our jobs.
