@@ -388,6 +388,12 @@ controller, try rebooting it.
 
 ## 4. SLURM configuration workers node
 
+Installing slurm-client of workers node
+
+``` bash
+sudo apt-get install slurmd slurm-client
+```
+
 Copy the configuration files: The configuration on all the worker nodes
 should match the configuration on the head node. So, copy it through the
 shared storage
