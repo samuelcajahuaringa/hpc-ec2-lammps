@@ -491,6 +491,20 @@ Check it was correctly installed on each workers
 srun --nodes=2 cmake --version
 ```
 
+### 6.2 Intall openmpi
+
+On the head node
+
+``` bash
+srun --nodes=2 sudo apt install openmpi-bin openmpi-common libopenmpi3 libopenmpi-dev -y
+```
+
+Check it was correctly installed on each workers
+
+``` bash
+srun --nodes=2 opmi_info --version
+```
+
 ### 6.3 Download LAMMPS
 
 On the head node
